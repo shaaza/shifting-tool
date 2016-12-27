@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang=''>
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- menu.html -->
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- 3rd party libraries -->
+  <script src="js/lib/d3.v3.js" charset="utf-8"></script>
+  <script src="js/lib/jquery-latest.min.js" type="text/javascript"></script>
+  <!-- app code --> 
+  <script src="js/data.js"></script><!-- data.js must be loaded first. optimize.js and optimaltimestep.js depend on it -->
+  <script src="js/plot.js"></script>
+  <script src="js/optimaltimestep.js"></script>
+  <script src="js/optimize.js"></script>
+  <script src="js/controller.js"></script>
+  <!-- menu.html -->
+  <!-- calc.html -->
+  <link rel="stylesheet" href="css/calc.css">
+  <!-- calc.html -->
+  <!-- enter-data.html -->
+  <!-- enter-data.html -->
+  <title>Shared Electric CO2 Cost Calculator</title>
+</head>
+<body>
+<!-- menu.html -->
+<div id='menu'>
+  <div id='cssmenu'>
+   <ul>
+      <li id='optimizelist'>
+        <label>
+          <a href='#' id="optimizelink">
+            <span>&nbspOptimize</span>
+          </a>
+        </label>
+      </li>
+      <li id='optimizelist'>
+          <a href='javascript:%20showFlexibilityProfile();'>
+            <span><input type="checkbox" id="fpcheckbox" onclick="showFlexibilityProfile();">&nbspFlexibility Profile</span>
+          </a>
+      </li>
+      <li>
+        <a href='#' onclick="open_dataform('enter-data');">
+          <span>Enter Load Profile</span>
+        </a>
+      </li>
+      <li class='last'>
+       <a href='#' onclick="open_dataform('addps');">
+        <span>Add Power Source</span>
+       </a>
+      </li>
+      <li style="float:right;">
+        <a href="#" onclick="open_dataform('about');">
+          <span>About</span>
+        </a>
+      </li>
+      <!-- Hidden object that simulates a drag event (rescales bars with dy = 0) on triggering customDragEvent and redraws load profile on resetLoadProfile event -->
+      <li style="display: none;">
+        <a href='#' id="dragsimulate">
+          <span>Simulate</span>
+        </a>
+      </li>
+
+   </ul>
+  </div>
+</div>
+<!-- menu.html -->
+<!-- calc.html -->
+<div id='calc'>
+  <div id="container">
+    <div id="line-chart-container">
+    <h1>Load profile</h1>
+    </div>
+    <div id="line-chart-legend">
+    <h3>Cost profile</h3>
+    <table>
+    <tbody>
+      <tr>
+        <th></th>
+        <th>Fuel (CHF)</th>
+        <th>CO<sub>2</sub> (kg)</th>
+      </tr>
+
+      <tr id="row-cost-original">
+        <th>Initial</th>
+        <td id="cost-fuel-original" class="value-original numeric">NaN</td>
+        <td id="cost-co2-original" class="value-original numeric">NaN</td>
+      </tr>
+      <tr>
+        <th>Current</th>
+        <td id="cost-fuel-current" class="value-current numeric">NaN</td>
+        <td id="cost-co2-current" class="value-current numeric">NaN</td>
+      </tr>
+    </tbody>
+    </table>
+
+    <h3>Load mismatch (kWh)</h3>
+    <div id="fig-load-offset" class="mismatch-bar">
+     <svg width="100%" height="100%">
+        <g>
+           <rect class="left-horizontal-bar"></rect>
+           <rect class="right-horizontal-bar"></rect>
+        </g>
+     </svg>
+     <div class="value-overlay">NaN</div>
+    </div>
+
+    <h3>Fuel savings (CHF)</h3>
+    <div id="fig-savings-fuel" class="mismatch-bar">
+     <svg width="100%" height="100%">
+        <g>
+           <rect class="left-horizontal-bar"></rect>
+           <rect class="right-horizontal-bar"></rect>
+        </g>
+     </svg>
+     <div class="value-overlay">NaN</div>
+    </div>
+
+    <h3>CO<sub>2</sub> savings (kg)</h3>
+    <div id="fig-savings-co2" class="mismatch-bar">
+     <svg width="100%" height="100%">
+        <g>
+           <rect class="left-horizontal-bar"></rect>
+           <rect class="right-horizontal-bar"></rect>
+        </g>
+     </svg>
+     <div class="value-overlay">NaN</div>
+    </div>
+
+    <h3>Legend</h3>
+    <table id="color-legend">
+      <tbody>
+      <tr>
+        <th class="legend-column-color"></th>
+        <th class="legend-column-type"></th>
+      </tr>
+      </tbody>
+    </table>
+      <table id="fp-legend">
+      <tr>
+      <tr>
+    </table>
+
+    <table id="flexibility-profile-legend" style="display: none;">
+      <tr>
+        <th class="legend-column-color"></th>
+        <th class="legend-column-type"></th>
+      </tr>
+      <tr>
+        <td>
+          <font style="color: red; font-weight: bold;">---</font>
+        </td>
+        <td>
+        Upward Flexibility Profile
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <font style="color: blue; font-weight: bold;">---</font>
+        </td>
+        <td>
+          Downward Flexibility Profile
+        </td>
+      </tr>
+    </tbody>
+    </table>
+    <table id="fp-legend">
+      <tr>
+      <tr>
+    </table>
+    </div>
+  </div>
+</div>
+
+
+<script>
+sharedElectricData.updateOptimalLoads();
+var totalLoadInitial = sharedElectricData.totalLoad;
+var totalCostInitial = {
+    fuel: sharedElectricData.totalCost.fuel,
+    co2: sharedElectricData.totalCost.co2
+ };
+
+
+var width = 800;
+var height = 600;
+var margins = { top: 20, right: 20, bottom: 50, left: 80 };
+var labels = { x: "Hour of day", y: "kWh" };
+var plot = new SvgPlotBase("#line-chart-container", width, height, margins, labels);
+var numFmt = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+
+updateLegends("#cost-fuel-original", "#cost-co2-original", "#load-original");
+updateLegends();
+
+ 
+plot.addStackedBarChart(sharedElectricData.getStackedBarData(updateLegends), true);
+// addPreloadedListItem is called after the add power source dialog loads
+updatePowerPlantLegend();
+
+</script>
+
+<!-- calc.html -->
+<!-- enter-data.html -->
+<div id='enter-data-container'>
+   <div id="enter-data">
+     <div id="popupContact">
+      <form action="#" id="form" method="post" name="form">
+       <h2>Enter Data</h2>
+       <img id="close" src="images/3.png" onclick ="close_dataform('enter-data')">
+       <div id="container" width="600px;">
+
+        <div id="load-profile">
+
+          <h3>Load Profile</h3>
+          <hr>
+          <div>12 am<input id="lp-0" name="lp-0" placeholder="kWh" type="text" class="shorter"></div>
+          <div>1 am<input id="lp-1" name="lp-1" placeholder="kWh" type="text"></div>
+          <div>2 am<input id="lp-2" name="lp-2" placeholder="kWh" type="text"></div>
+          <div>3 am<input id="lp-3" name="lp-3" placeholder="kWh" type="text"></div>
+          <div>4 am<input id="lp-4" name="lp-4" placeholder="kWh" type="text"></div>
+          <div>5 am<input id="lp-5" name="lp-5" placeholder="kWh" type="text"></div>
+          <div>6 am<input id="lp-6" name="lp-6" placeholder="kWh" type="text"></div>
+          <div>7 am<input id="lp-7" name="lp-7" placeholder="kWh" type="text"></div>
+          <div>8 am<input id="lp-8" name="lp-8" placeholder="kWh" type="text"></div>
+          <div>9 am<input id="lp-9" name="lp-9" placeholder="kWh" type="text"></div>
+          <div>10 am<input id="lp-10" name="lp-10" placeholder="kWh" type="text" class="shorter"></div>
+          <div>11 am<input id="lp-11" name="lp-11" placeholder="kWh" type="text" class="shorter"></div>
+          <div>12 pm<input id="lp-12" name="lp-12" placeholder="kWh" type="text" class="shorter"></div>
+          <div>1 pm<input id="lp-13" name="lp-13" placeholder="kWh" type="text"></div>
+          <div>2 pm<input id="lp-14" name="lp-14" placeholder="kWh" type="text"></div>
+          <div>3 pm<input id="lp-15" name="lp-15" placeholder="kWh" type="text"></div>
+          <div>4 pm<input id="lp-16" name="lp-16" placeholder="kWh" type="text"></div>
+          <div>5 pm<input id="lp-17" name="lp-17" placeholder="kWh" type="text"></div>
+          <div>6 pm<input id="lp-18" name="lp-18" placeholder="kWh" type="text"></div>
+          <div>7 pm<input id="lp-19" name="lp-19" placeholder="kWh" type="text"></div>
+          <div>8 pm<input id="lp-20" name="lp-20" placeholder="kWh" type="text"></div>
+          <div>9 pm<input id="lp-21" name="lp-21" placeholder="kWh" type="text"></div>
+          <div>10 pm<input id="lp-22" name="lp-22" placeholder="kWh" type="text" class="shorter"></div>
+          <div>11 pm<input id="lp-23" name="lp-23" placeholder="kWh" type="text" class="shorter"></div>
+        
+        </div>
+
+        <div id="upward-flexibility">
+
+          <h3>Upward Flexibility</h3>
+          <hr>
+          <div>12 am<input id="uf-0" name="uf-0" placeholder="kWh" type="text" class="shorter"></div>
+          <div>1 am<input id="uf-1" name="uf-1" placeholder="kWh" type="text"></div>
+          <div>2 am<input id="uf-2" name="uf-2" placeholder="kWh" type="text"></div>
+          <div>3 am<input id="uf-3" name="uf-3" placeholder="kWh" type="text"></div>
+          <div>4 am<input id="uf-4" name="uf-4" placeholder="kWh" type="text"></div>
+          <div>5 am<input id="uf-5" name="uf-5" placeholder="kWh" type="text"></div>
+          <div>6 am<input id="uf-6" name="uf-6" placeholder="kWh" type="text"></div>
+          <div>7 am<input id="uf-7" name="uf-7" placeholder="kWh" type="text"></div>
+          <div>8 am<input id="uf-8" name="uf-8" placeholder="kWh" type="text"></div>
+          <div>9 am<input id="uf-9" name="uf-9" placeholder="kWh" type="text"></div>
+          <div>10 am<input id="uf-10" name="uf-10" placeholder="kWh" type="text" class="shorter"></div>
+          <div>11 am<input id="uf-11" name="uf-11" placeholder="kWh" type="text" class="shorter"></div>
+          <div>12 pm<input id="uf-12" name="uf-12" placeholder="kWh" type="text" class="shorter"></div>
+          <div>1 pm<input id="uf-13" name="uf-13" placeholder="kWh" type="text"></div>
+          <div>2 pm<input id="uf-14" name="uf-14" placeholder="kWh" type="text"></div>
+          <div>3 pm<input id="uf-15" name="uf-15" placeholder="kWh" type="text"></div>
+          <div>4 pm<input id="uf-16" name="uf-16" placeholder="kWh" type="text"></div>
+          <div>5 pm<input id="uf-17" name="uf-17" placeholder="kWh" type="text"></div>
+          <div>6 pm<input id="uf-18" name="uf-18" placeholder="kWh" type="text"></div>
+          <div>7 pm<input id="uf-19" name="uf-19" placeholder="kWh" type="text"></div>
+          <div>8 pm<input id="uf-20" name="uf-20" placeholder="kWh" type="text"></div>
+          <div>9 pm<input id="uf-21" name="uf-21" placeholder="kWh" type="text"></div>
+          <div>10 pm<input id="uf-22" name="uf-22" placeholder="kWh" type="text" class="shorter"></div>
+          <div>11 pm<input id="uf-23" name="uf-23" placeholder="kWh" type="text" class="shorter"></div>
+        
+        </div>
+
+        <div id="downward-flexibility">
+          <h3>Downward Flexibility</h3>
+          <hr>
+          <div>12 am<input id="df-0" name="df-0" placeholder="kWh" type="text" class="shorter"></div>
+          <div>1 am<input id="df-1" name="df-1" placeholder="kWh" type="text"></div>
+          <div>2 am<input id="df-2" name="df-2" placeholder="kWh" type="text"></div>
+          <div>3 am<input id="df-3" name="df-3" placeholder="kWh" type="text"></div>
+          <div>4 am<input id="df-4" name="df-4" placeholder="kWh" type="text"></div>
+          <div>5 am<input id="df-5" name="df-5" placeholder="kWh" type="text"></div>
+          <div>6 am<input id="df-6" name="df-6" placeholder="kWh" type="text"></div>
+          <div>7 am<input id="df-7" name="df-7" placeholder="kWh" type="text"></div>
+          <div>8 am<input id="df-8" name="df-8" placeholder="kWh" type="text"></div>
+          <div>9 am<input id="df-9" name="df-9" placeholder="kWh" type="text"></div>
+          <div>10 am<input id="df-10" name="df-10" placeholder="kWh" type="text" class="shorter"></div>
+          <div>11 am<input id="df-11" name="df-11" placeholder="kWh" type="text" class="shorter"></div>
+          <div>12 pm<input id="df-12" name="df-12" placeholder="kWh" type="text" class="shorter"></div>
+          <div>1 pm<input id="df-13" name="df-13" placeholder="kWh" type="text"></div>
+          <div>2 pm<input id="df-14" name="df-14" placeholder="kWh" type="text"></div>
+          <div>3 pm<input id="df-15" name="df-15" placeholder="kWh" type="text"></div>
+          <div>4 pm<input id="df-16" name="df-16" placeholder="kWh" type="text"></div>
+          <div>5 pm<input id="df-17" name="df-17" placeholder="kWh" type="text"></div>
+          <div>6 pm<input id="df-18" name="df-18" placeholder="kWh" type="text"></div>
+          <div>7 pm<input id="df-19" name="df-19" placeholder="kWh" type="text"></div>
+          <div>8 pm<input id="df-20" name="df-20" placeholder="kWh" type="text"></div>
+          <div>9 pm<input id="df-21" name="df-21" placeholder="kWh" type="text"></div>
+          <div>10 pm<input id="df-22" name="df-22" placeholder="kWh" type="text" class="shorter"></div>
+          <div>11 pm<input id="df-23" name="df-23" placeholder="kWh" type="text" class="shorter"></div>
+        
+        </div>
+       </div>
+       <br>
+       <div id="enter-data-alert" class="alert" ></div>
+       <div id="enter-data-success" class="success"></div>
+       <a href="javascript:%20validateData()" id="submit">Submit</a>
+    </form>
+   </div>
+  </div>
+</div>
+<!-- enter-data.html -->
+<!-- add-power-source.html -->
+<div id='add-power-source'>
+  <div id="addps">
+   <div id="popupContact">
+     <form action="#" id="form" method="post" name="form">
+       <h2>Add Power Source</h2>
+       <img id="close" src="images/3.png" onclick ="close_dataform('addps')">
+        <div id="container" width="600px;">
+          <div id="power-plant-list">
+            <a href="javascript:%20deleteAllPowerSources();" style="float: right;">Delete All</a><br><br>
+            <table id="add-ps-ol">
+              <thead id="added">
+                <tr>
+                <th>Name</th>
+                <th>Cost</th>
+                <th>CO<sub>2</sub></th>
+              </tr>
+               <tr>
+                <th></th>
+                <th class="smaller">CHF/kWh</th>
+                <th class="smaller">kg-CO<sub>2</sub>-eq/kWh</th>
+              </tr>
+              </thead>
+
+              <tbody id="new-ps">
+                <tr>
+                  <td>&nbsp</td>
+                  <td>&nbsp</td>
+                  <td>&nbsp</td>
+                </tr>
+                <tr>
+                  <td>
+                    <input type="text" id="pp-1-name" placeholder="New Power Plant Name" class="pp-name">
+                  </td>
+                  <td>
+                    <input type="text" id="pp-1-cost" placeholder="Cost" class="pp-cost">
+                  </td>
+                  <td>
+                    <input type="text" id="pp-1-co2" placeholder="CO2" class="pp-co2">
+                  </td>
+                <tr>
+              </tbody>
+            </table>
+            <br>
+            <a href="javascript:%20showMinMax();" id="addps-button">Add</a><br>
+
+            <div id="min">
+
+              <h3>Min Usage / Hour</h3>
+              <hr>
+              <div>12 am<input id="min-0" name="min-0" placeholder="kWh" type="text" class="shorter"></div>
+              <div>1 am<input id="min-1" name="min-1" placeholder="kWh" type="text"></div>
+              <div>2 am<input id="min-2" name="min-2" placeholder="kWh" type="text"></div>
+              <div>3 am<input id="min-3" name="min-3" placeholder="kWh" type="text"></div>
+              <div>4 am<input id="min-4" name="min-4" placeholder="kWh" type="text"></div>
+              <div>5 am<input id="min-5" name="min-5" placeholder="kWh" type="text"></div>
+              <div>6 am<input id="min-6" name="min-6" placeholder="kWh" type="text"></div>
+              <div>7 am<input id="min-7" name="min-7" placeholder="kWh" type="text"></div>
+              <div>8 am<input id="min-8" name="min-8" placeholder="kWh" type="text"></div>
+              <div>9 am<input id="min-9" name="min-9" placeholder="kWh" type="text"></div>
+              <div>10 am<input id="min-10" name="min-10" placeholder="kWh" type="text" class="shorter"></div>
+              <div>11 am<input id="min-11" name="min-11" placeholder="kWh" type="text" class="shorter"></div>
+              <div>12 pm<input id="min-12" name="min-12" placeholder="kWh" type="text" class="shorter"></div>
+              <div>1 pm<input id="min-13" name="min-13" placeholder="kWh" type="text"></div>
+              <div>2 pm<input id="min-14" name="min-14" placeholder="kWh" type="text"></div>
+              <div>3 pm<input id="min-15" name="min-15" placeholder="kWh" type="text"></div>
+              <div>4 pm<input id="min-16" name="min-16" placeholder="kWh" type="text"></div>
+              <div>5 pm<input id="min-17" name="min-17" placeholder="kWh" type="text"></div>
+              <div>6 pm<input id="min-18" name="min-18" placeholder="kWh" type="text"></div>
+              <div>7 pm<input id="min-19" name="min-19" placeholder="kWh" type="text"></div>
+              <div>8 pm<input id="min-20" name="min-20" placeholder="kWh" type="text"></div>
+              <div>9 pm<input id="min-21" name="min-21" placeholder="kWh" type="text"></div>
+              <div>10 pm<input id="min-22" name="min-22" placeholder="kWh" type="text" class="shorter"></div>
+              <div>11 pm<input id="min-23" name="min-23" placeholder="kWh" type="text" class="shorter"></div>
+
+            </div>
+
+            <div id="max">
+
+              <h3>Max Usage / Hour</h3>
+              <hr>
+              <div>12 am<input id="max-0" name="max-0" placeholder="kWh" type="text" class="shorter"></div>
+              <div>1 am<input id="max-1" name="max-1" placeholder="kWh" type="text"></div>
+              <div>2 am<input id="max-2" name="max-2" placeholder="kWh" type="text"></div>
+              <div>3 am<input id="max-3" name="max-3" placeholder="kWh" type="text"></div>
+              <div>4 am<input id="max-4" name="max-4" placeholder="kWh" type="text"></div>
+              <div>5 am<input id="max-5" name="max-5" placeholder="kWh" type="text"></div>
+              <div>6 am<input id="max-6" name="max-6" placeholder="kWh" type="text"></div>
+              <div>7 am<input id="max-7" name="max-7" placeholder="kWh" type="text"></div>
+              <div>8 am<input id="max-8" name="max-8" placeholder="kWh" type="text"></div>
+              <div>9 am<input id="max-9" name="max-9" placeholder="kWh" type="text"></div>
+              <div>10 am<input id="max-10" name="max-10" placeholder="kWh" type="text" class="shorter"></div>
+              <div>11 am<input id="max-11" name="max-11" placeholder="kWh" type="text" class="shorter"></div>
+              <div>12 pm<input id="max-12" name="max-12" placeholder="kWh" type="text" class="shorter"></div>
+              <div>1 pm<input id="max-13" name="max-13" placeholder="kWh" type="text"></div>
+              <div>2 pm<input id="max-14" name="max-14" placeholder="kWh" type="text"></div>
+              <div>3 pm<input id="max-15" name="max-15" placeholder="kWh" type="text"></div>
+              <div>4 pm<input id="max-16" name="max-16" placeholder="kWh" type="text"></div>
+              <div>5 pm<input id="max-17" name="max-17" placeholder="kWh" type="text"></div>
+              <div>6 pm<input id="max-18" name="max-18" placeholder="kWh" type="text"></div>
+              <div>7 pm<input id="max-19" name="max-19" placeholder="kWh" type="text"></div>
+              <div>8 pm<input id="max-20" name="max-20" placeholder="kWh" type="text"></div>
+              <div>9 pm<input id="max-21" name="max-21" placeholder="kWh" type="text"></div>
+              <div>10 pm<input id="max-22" name="max-22" placeholder="kWh" type="text" class="shorter"></div>
+              <div>11 pm<input id="max-23" name="max-23" placeholder="kWh" type="text" class="shorter"></div>
+
+            </div>
+
+          </div>
+        </div>
+       <br>
+       <div id="addps-alert" class="alert"></div>
+      <div id="addps-submit"><a href="javascript:%20validatePowerSource()" id="submit2">Submit</a></div>
+
+    </form>
+   </div>
+  </div>
+</div>
+<script>addPreloadedListItem();</script>
+  <!-- add-power-source.html -->
+<!-- about.html -->
+<div id='about-container'>
+  <div id="about">
+    <div id="popupContact">
+      <form action="#" id="form" method="post" name="form">
+      <h2>About this Calculator</h2>
+      <img id="close" src="images/3.png" onclick ="close_dataform('about')">
+        <div id="container" width="600px;">
+
+          <p>This calculator is made by Shared Electric to explore the power of load shifting.</p>  
+
+          <h3>Load Shifting</h3>
+
+            <p>Load shifting is one of the techniques used in demand-side management. It involves moving the consumption of high wattage loads to different times within an hour or within a day or even within a week. It doesn’t lead to reduction in net quantity of energy consumed in an electricity. It simply involves changing the “when consumed” rather than “how much consumed”.</p>
+
+            <p>To understand the reason behind load shifting, one needs to realize that electricity generation is a dynamic process involving several different kinds of generating stations employing different generation technologies. Accordingly, there are different costs associated with electricity generated at any given point of time. This means that there exists savings in net generation costs if it could be moved around in time, even while keeping the net generated energy the same. This is where load shifting comes into play.</p>
+
+            <p>This shifting can happen in multiple different ways. For example having variable electricity price and thus encourage consumption in specific hours, remote controlling specific appliances etc. or with flexible energy delivery agreements with industries. 
+          This calculator is meant to show how shifting can lower procurement cost. It is also meant to help explain that shifting focused on lowering procurement cost often goes together with lower carbon footprint.</p>
+
+          <h3>Main concepts:</h3>
+
+            <h4>Load Profile:</h4>
+              <p>A Load Profile is a list of values indicating the energy use at each specific hour. </p>
+
+            <h4>Flexibility Profile:</h4>
+              <p>Flexibility profile describes the flexibility of the load profile. How much can load shifting influence the load profile at each hour upwards and downwards? </p>
+
+            <h4>Add a power source:</h4>
+              <p> That button allows you to add a new power source to your electricity system. You choose a name and the cost of production per kWh and co2 per kWh. For each hour of the day you indicate minimum and maximum generation capacity. </p>
+
+            <h4>Change Data</h4>
+              <p> This allows you to edit the load profile and flexibility profile. </p>
+
+            <h4>Optimize:</h4>
+
+              <p>This button moves the load profile to the optimum load profile within the bounds given by the flexibility profile while keeping amount of units the same. That is:  How should you modify the load profile to obtain optimum savings? </p>
+
+          <h3>How to use:</h3>
+
+            <p>The calculator shows a specific load profile and the power plants that need to run to fulfill that load profile. You can drag the load profile up and down within each hour and see how the power-that run change. One the right side you see the difference in units generated, running cost and CO2 footprint between the load-profiles before and after dragging. </p>
+
+          <ol>
+            <li>
+            Start with the preset data. Drag different columns up and down. Make sure that load mismatch graph shows zero. Then you can see the change in CO2 footprint and in procurement cost. 
+            </li>
+            <li>
+            To get the optimum load profile within the bounds of the flexibility profile press optimize. See how much CO2 and money you would save.
+            </li>
+            <li>
+            Then you can add or remove power sources to adapt the model to your scenario. 
+            </li>
+            <li>
+            Edit the load profile and the flexibility profile to adapt it to the desired scenario. 
+            </li>
+          </ol>
+
+          <h3>Copyright</h3>
+            <p>This calculator is for demonstration purposes only and belongs to Shared Electric GmbH. All rights reserved. </p>
+
+
+          <hr>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+<!-- about.html -->
+</body>
+<html>
