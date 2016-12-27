@@ -1,0 +1,106 @@
+     body {
+       font: 10pt sans-serif;
+       margin: 0;
+       padding: 0;
+     }
+     #line-chart-container {
+       width: 800px;
+       padding: 0;
+     }
+
+		 #line-chart-container h1 {
+			 text-align: center;
+		 }
+		 
+     #line-chart-container svg {
+       float: left;
+     }
+
+     #line-chart-legend {
+       float: left;
+       width: 250px;
+     }
+     #line-chart-legend table {
+       width: 100%;
+     }
+
+     #line-chart-legend th {
+       text-align: left;
+     }
+
+     .numeric {
+       text-align: right !important;
+     }
+
+     h3 {
+       margin-bottom: 1pt;
+     }
+
+     .axis path,
+     .axis line {
+       fill: none;
+       stroke: black;
+       shape-rendering: crispEdges;
+     }
+
+		 .axis text.label {
+			 font-weight: bold;
+			 }
+
+     .line {
+       stroke: black;
+       fill: none;
+       stroke-width: 2px;
+       shadow: 1px solid white;
+     }
+
+     circle {
+       stroke: black;
+       stroke-width: 1.5px;
+       fill: white;
+     }
+
+     .bar {
+       stroke: white;
+       opacity: 0.9;
+     }
+     
+     .legend-column-color {
+       width: 15px;
+       opacity: 0.9; /* for color consistency */
+     }
+
+
+		 .mismatch-bar {
+			 margin: 0;
+			 padding: 0;
+			 height: 20pt;
+			 background-color: #eee;
+		 }
+		 .mismatch-bar svg {
+			 height: 100%;
+			 margin: 0;
+			 padding: 0;
+		 }
+		 .mismatch-bar .value-overlay {
+			 margin: 0;
+			 padding: 0;
+			 width: 100%;
+			 height: 100%;
+			 line-height: 20pt;
+			 position: relative;
+			 top: -100%;
+			 text-align: center;
+			 font-size: 14pt;
+		 }
+
+		 
+     /*
+
+     circle:hover {
+     stroke: red !important;
+     }
+
+     circle:active {
+     stroke: purple !important;
+     }*/

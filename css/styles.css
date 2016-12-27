@@ -1,0 +1,367 @@
+/*----------------------------------------------
+CSS settings for Menu Bar
+------------------------------------------------*/
+
+#cssmenu {
+  zoom: 1;
+  width: auto;
+  background: #000000;
+  padding: 8px 0;
+}
+#cssmenu:before {
+  content: '';
+  display: block;
+}
+#cssmenu:after {
+  content: '';
+  display: table;
+  clear: both;
+}
+#cssmenu ul {
+  list-style-type: none;
+  position: relative;
+  display: block;
+  font-size: 14px;
+  font-family: Verdana, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid #7ab900;
+  zoom: 1;
+}
+#cssmenu ul:before {
+  content: '';
+  display: block;
+}
+#cssmenu ul:after {
+  content: '';
+  display: table;
+  clear: both;
+}
+#cssmenu li {
+  display: block;
+  float: left;
+  margin: 0;
+  padding: 0;
+}
+#cssmenu li a {
+  float: left;
+  color: white;
+  text-decoration: none;
+  height: 24px;
+  padding: 9px 15px 0;
+  font-weight: normal;
+}
+#cssmenu li:hover,
+#cssmenu .active {
+  text-decoration: none;
+  border-bottom: 2px solid #7ab900;
+  
+}
+#cssmenu li:hover a {
+  color: #4682b4;
+}
+#cssmenu .active a {
+  color: #fff;
+  font-weight: 700;
+}
+
+#cssmenu label {
+    display: block;
+    padding-left: 15px;
+    text-indent: -15px;
+}
+#cssmenu input {
+    width: 13px;
+    height: 13px;
+    padding: 0;
+    margin:0;
+    vertical-align: bottom;
+    position: relative;
+    top: -1px;
+    *overflow: hidden;
+}
+
+
+/*----------------------------------------------
+CSS settings for Enter Data Popup Form
+------------------------------------------------*/
+
+@import "http://fonts.googleapis.com/css?family=Raleway";
+#enter-data, #addps, #about {
+width:100%;
+height:100%;
+opacity:.95;
+top:0;
+left:0;
+display:none;
+position:fixed;
+background-color:#313131;
+overflow:auto
+}
+#enter-data img#close, #addps img#close, #about img#close {
+position:absolute;
+right:-14px;
+top:-14px;
+cursor:pointer
+}
+#enter-data div#popupContact, #addps div#popupContact,  #about div#popupContact {
+position:absolute;
+left:50%;
+top:17%;
+margin-left:-377px;
+font-family:'Raleway',sans-serif
+}
+#enter-data form {
+max-width:600px;
+min-width:600px;
+padding:10px 50px;
+border:2px solid gray;
+border-radius:10px;
+font-family:raleway;
+background-color:#fff
+}
+#addps form, #about form {
+max-width:670px;
+min-width:670px;
+padding:10px 50px;
+border:2px solid gray;
+border-radius:10px;
+font-family:raleway;
+background-color:#fff
+}
+#enter-data p, #addps p{
+margin-top:30px
+}
+#enter-data h2, #addps h2 {
+background-color:#FEFFED;
+padding:20px 35px;
+margin:-10px -50px;
+text-align:center;
+border-radius:10px 10px 0 0;
+font-family: Arial;
+}
+#enter-data h3, #addps h3 {
+
+text-align:center;
+font-family: Arial;
+}
+#enter-data hr, #addps hr, #about hr {
+margin:10px -50px;
+border:0;
+border-top:1px solid #ccc
+}
+#enter-data input[type=text], #addps input[type=text] {
+width:50%;
+// padding:10px;
+// margin-top:30px;
+border:1px solid #ccc;
+// padding-left:10px;
+font-size:14px;
+font-family:Trebuchet MS;
+margin-left: 16px;
+text-align:center;
+}
+#enter-data input[type=text].shorter, #addps input[type=text].shorter {
+
+margin-left: 10px;
+
+}
+#enter-data #name, #addps #name2 {
+background-image:url(../images/name.jpg);
+background-repeat:no-repeat;
+background-position:5px 7px
+}
+#enter-data #email, #addps #email2 {
+background-image:url(../images/email.png);
+background-repeat:no-repeat;
+background-position:5px 7px
+}
+#enter-data textarea,  #addps textarea {
+background-image:url(../images/msg.png);
+background-repeat:no-repeat;
+background-position:5px 7px;
+width:50%;
+height:95px;
+padding:10px;
+resize:none;
+margin-top:30px;
+border:1px solid #ccc;
+padding-left:40px;
+font-size:16px;
+font-family:raleway;
+margin-bottom:30px
+}
+#enter-data #submit, #addps #submit2 {
+text-decoration:none;
+width:100px;;
+text-align:center;
+display:block;
+background-color:#FFBC00;
+color:#fff;
+border:1px solid #FFCB00;
+padding:10px 0;
+font-size:20px;
+cursor:pointer;
+border-radius:5px;
+margin-left:250px;
+margin-top:25px;
+}
+
+
+
+#enter-data #container {
+background-color: #fff;
+overflow: auto;
+width: 600px;
+height: 280px;
+}
+#enter-data #load-profile {
+width: 200px;
+float:left;
+background-color: #fff;
+}
+
+#enter-data #upward-flexibility {
+width: 200px;
+float:left;
+
+}
+
+#enter-data #downward-flexibility {
+width: 200px;
+float:left;
+}
+
+#enter-data #load-profile div {
+display:block;
+text-align: center;
+}
+
+
+
+#enter-data #upward-flexibility div {
+display:block;
+text-align: center;
+}
+#enter-data #downward-flexibility div {
+display:block;
+text-align: center;
+}
+
+#addps #power-plant-list {
+width: 660px;
+display:inline-block;
+font-family: Trebuchet MS;
+}
+
+#addps #power-plant-list #min {
+width: 330px;
+float:left;
+display: none;
+
+}
+
+#addps #power-plant-list #max {
+width: 330px;
+float:left;
+display:none;
+}
+
+#addps #min div {
+display:block;
+text-align: center;
+}
+
+#addps #max div {
+display:block;
+text-align: center;
+}
+
+#addps input.pp-name, #addps input.pp-cost, #addps input.pp-co2 {
+  width: 180px;
+}
+
+#addps #addps-button {
+text-decoration:none;
+width:60px;;
+text-align:center;
+display:block;
+background-color:#FFBC00;
+color:#fff;
+border:1px solid #FFCB00;
+padding:10px 0;
+font-size:16px;
+cursor:pointer;
+border-radius:5px;
+float:right;
+}
+
+#addps #addps-submit {
+  display:none;
+}
+#add-ps-ol #added td {
+  padding:2px;
+  font-size: 12px;
+  font-family: Trebuchet MS;
+}
+
+#add-ps-ol tbody {
+  padding-top: 10px;
+}
+#add-ps-ol th {
+  text-align: left;
+}
+#add-ps-ol th.smaller {
+  font-weight: normal;
+  font-size: 10px;
+  color: grey;
+}
+
+#about p {
+margin-top:10px;
+font-family: Trebuchet MS;
+}
+
+#about h2 {
+background-color:#FEFFED;
+padding:20px 35px;
+margin:-10px -50px;
+text-align:center;
+border-radius:10px 10px 0 0;
+font-family: Trebuchet MS;
+color:#315b7d;
+}
+
+#about h3 {
+
+text-align:center;
+font-family: Trebuchet MS;
+color: steelblue;
+}
+
+#about h4 {
+text-align:left;
+font-family: Trebuchet MS;
+color: #7da7ca;
+}
+
+#about ol {
+  margin-top: 5px;
+  font-family: Trebuchet MS;
+}
+
+#about li {
+  margin-top: 5px;
+  font-family: Trebuchet MS;
+}
+
+#enter-data .alert, #addps .alert {
+  font-family: Trebuchet MS;
+  color: red;
+  text-align: center;
+}
+#enter-data .success {
+  font-family: Trebuchet MS;
+  color: green;
+  text-align: center;
+}
