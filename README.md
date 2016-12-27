@@ -3,3 +3,7 @@ An interactive demand side management tool for electricity utilities to assess s
 
 ## Usage
 Clone the repo and merely open up index.html with the same folder structure, because Webpack would be overkill.
+
+## Contributors
+Abhit Patil
+Shaaz Ahmed
